@@ -55,7 +55,12 @@ contains
     integer(kind=mpi_address_kind) :: msize
     type(c_ptr) :: baseptr1, baseptr2
 
-    call mpi_init(merr)
+    logical :: mpi_is_initialized
+
+    call mpi_initialized(mpi_is_initialized, merr)
+    if (.not. mpi_is_initialized) then
+       call mpi_init(merr)
+    endif
 
     cart2d%sizes(:) = my_sizes(:)
     cart2d%coords(:)  = 0

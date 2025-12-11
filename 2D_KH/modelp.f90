@@ -1,4 +1,5 @@
 subroutine modelp(U,V,x,y,dx,ix,jx)
+  use run_config_mod, only: sim_config
   use parallel
   implicit none
   include 'param.h'
@@ -8,11 +9,15 @@ subroutine modelp(U,V,x,y,dx,ix,jx)
   integer, intent(in)  :: ix, jx
 ! ---------------------------------------------------
 ! model parameters
-! x & y positions (Note: domain_y(2) is automatically calculated)
-  real(8), parameter :: domain_x(2) = (/0.d0, 16.d0/)
-  real(8), parameter :: domain_y(1) = (/-10.d0/)
+  real(8) :: domain_x(2)
+  real(8) :: domain_y_min
   real(8), parameter :: pi2   = 8.d0 * atan(1.d0)
-  real(8), parameter :: alpha = 0.2d0
+  real(8) :: alpha
+  real(8) :: pressure0
+  real(8) :: vx_shear
+  real(8) :: vy_amplitude
+  real(8) :: vy_limit
+  real(8) :: bx0, by0, bz0
 ! ---------------------------------------------------
   integer :: i, j
   integer :: iix, jjx
@@ -20,6 +25,17 @@ subroutine modelp(U,V,x,y,dx,ix,jx)
   real(8) :: tmpx(cart2d%sizes(1)*(ix-2) + 2)
   real(8) :: tmpy(cart2d%sizes(2)*(jx-2) + 2)
 ! ---------------------------------------------------
+
+  domain_x     = sim_config%domain_x
+  domain_y_min = sim_config%domain_y_min
+  alpha        = sim_config%alpha
+  pressure0    = sim_config%pressure0
+  vx_shear     = sim_config%vx_shear
+  vy_amplitude = sim_config%vy_amplitude
+  vy_limit     = sim_config%vy_scale_limit
+  bx0          = sim_config%bx0
+  by0          = sim_config%by0
+  bz0          = sim_config%bz0
 
 ! grid in the X direction
   iix = cart2d%sizes(1)*(ix-2) + 2
@@ -36,7 +52,7 @@ subroutine modelp(U,V,x,y,dx,ix,jx)
 
 ! grid in the Y direction
   jjx = cart2d%sizes(2)*(jx-2) + 2
-  tmpy(1) = domain_y(1) - dx/2
+  tmpy(1) = domain_y_min - dx/2
   do j=2,jjx
      tmpy(j) = tmpy(j-1) + dx
   enddo
@@ -49,17 +65,17 @@ subroutine modelp(U,V,x,y,dx,ix,jx)
   do i=1,ix
 
      U(i,j,ro) = 0.5d0 * ( (1.d0+alpha) + (1.d0-alpha)*tanh(y(j)) )
-     V(i,j,pr) = 0.15d0
-     V(i,j,vx) = -0.5d0 * tanh(y(j))
+     V(i,j,pr) = pressure0
+     V(i,j,vx) = -vx_shear * tanh(y(j))
 ! Here we use min(..., 25) to avoid NaN on some systems.
 ! Note that (cosh(25))**(-2) = 7.7E-22 is extremely small.
-     V(i,j,vy) = 0.1d0 * sin( pi2*x(i) / Lx ) / cosh(min( y(j), 25.d0 ))**2
+     V(i,j,vy) = vy_amplitude * sin( pi2*x(i) / Lx ) / cosh(min( y(j), vy_limit ))**2
 !     V(i,j,vy) = 0.1d0 * sin( pi2*x(i) / Lx ) / cosh(y(j))**2
      V(i,j,vz) = 0.d0
 
-     U(i,j,bx) = 0.d0
-     U(i,j,by) = 0.d0
-     U(i,j,bz) = 1.d0
+     U(i,j,bx) = bx0
+     U(i,j,by) = by0
+     U(i,j,bz) = bz0
      U(i,j,ps) = 0.d0
 
      f1 = 1.d0 / ( gamma - 1 )

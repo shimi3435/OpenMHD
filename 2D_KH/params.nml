@@ -1,0 +1,26 @@
+&run_params
+  nx = 160
+  ny = 200
+  loop_max = 200000
+  tend = 100.0
+  dtout = 5.0
+  cfl = 0.4
+  lm_type = 1
+  flux_type = 3
+  time_type = 0
+  domain_x = 0.0, 16.0
+  domain_y_min = -10.0
+  alpha = 0.2
+  pressure0 = 0.15
+  vx_shear = 0.5
+  vy_amplitude = 0.1
+  vy_scale_limit = 25.0
+  bx0 = 0.0
+  by0 = 0.0
+  bz0 = 1.0
+  mpi_nums = 2, 2
+  bc_periodicity = .true., .false.
+  io_type = 1
+  n_start = 0
+  output_dir = 'data'
+/

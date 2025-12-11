@@ -4,20 +4,18 @@ program main
 !-----------------------------------------------------------------------
 !     2010/09/27  S. Zenitani  K-H instability
 !-----------------------------------------------------------------------
+  use run_config_mod, only: sim_config, load_run_config, set_output_dir, ensure_output_directory
   implicit none
   include 'param.h'
-  integer, parameter :: ix = 160 + 2
-  integer, parameter :: jx = 200 + 2
-  integer, parameter :: loop_max = 200000
-  real(8), parameter :: tend  = 100.0d0
-  real(8), parameter :: dtout =   5.0d0 ! output interval
-  real(8), parameter :: cfl   =   0.4d0 ! time step
-! Slope limiter  (0: flat, 1: minmod, 2: MC, 3: van Leer, 4: Koren)
-  integer, parameter :: lm_type   = 1
-! Numerical flux (0: LLF, 1: HLL, 2: HLLC, 3: HLLD)
-  integer, parameter :: flux_type = 3
-! Time marching  (0: TVD RK2, 1: RK2)
-  integer, parameter :: time_type = 0
+  integer :: ix, jx
+  integer :: loop_max
+  real(8) :: tend
+  real(8) :: dtout
+  real(8) :: cfl
+! Slope limiter, numerical flux, and time integration settings
+  integer :: lm_type
+  integer :: flux_type
+  integer :: time_type
 !-----------------------------------------------------------------------
 ! See also model.f90
 !-----------------------------------------------------------------------
@@ -25,14 +23,43 @@ program main
   real(8) :: t, dt, t_output
   real(8) :: ch
   character*256 :: filename
+  character(len=256) :: params_arg, out_arg
 !-----------------------------------------------------------------------
-  real(8) :: x(ix), y(jx), dx
-  real(8) :: U(ix,jx,var1)  ! conserved variables (U)
-  real(8) :: U1(ix,jx,var1) ! conserved variables: medium state (U*)
-  real(8) :: V(ix,jx,var2)  ! primitive variables (V)
-  real(8) :: VL(ix,jx,var1), VR(ix,jx,var1) ! interpolated states
-  real(8) :: F(ix,jx,var1), G(ix,jx,var1)   ! numerical flux (F,G)
+  real(8), allocatable :: x(:), y(:)
+  real(8) :: dx
+  real(8), allocatable :: U(:,:,:)
+  real(8), allocatable :: U1(:,:,:)
+  real(8), allocatable :: V(:,:,:)
+  real(8), allocatable :: VL(:,:,:), VR(:,:,:)
+  real(8), allocatable :: F(:,:,:), G(:,:,:)
 !-----------------------------------------------------------------------
+
+  call get_command_argument(1, params_arg)
+  if (len_trim(params_arg) > 0) then
+     call load_run_config(trim(params_arg))
+  else
+     call load_run_config()
+  endif
+  call get_command_argument(2, out_arg)
+  if (len_trim(out_arg) > 0) call set_output_dir(trim(out_arg))
+  call ensure_output_directory()
+
+  ix = sim_config%nx + 2
+  jx = sim_config%ny + 2
+  loop_max = sim_config%loop_max
+  tend     = sim_config%tend
+  dtout    = sim_config%dtout
+  cfl      = sim_config%cfl
+  lm_type  = sim_config%lm_type
+  flux_type = sim_config%flux_type
+  time_type = sim_config%time_type
+
+  allocate(x(ix), y(jx))
+  allocate(U(ix,jx,var1))
+  allocate(U1(ix,jx,var1))
+  allocate(V(ix,jx,var2))
+  allocate(VL(ix,jx,var1), VR(ix,jx,var1))
+  allocate(F(ix,jx,var1), G(ix,jx,var1))
 
   t    =  0.d0
   dt   =  0.d0
@@ -64,8 +91,7 @@ program main
 !    [ output ]
      if ( t >= t_output ) then
         write(6,*) 'data output   t = ', t
-        write(filename,990) n_output
-990     format ('data/field-',i5.5,'.dat')
+        write(filename,'(A,"/field-",i5.5,".dat")') trim(sim_config%output_dir), n_output
         call fileio_output(filename,ix,jx,t,x,y,U,V)
         n_output = n_output + 1
         t_output = t_output + dtout
