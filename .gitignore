@@ -1,0 +1,6 @@
+*.out
+*.o
+*.dat
+*.mod
+*PS.o*
+*.pyc
