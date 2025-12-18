@@ -4,17 +4,17 @@
 set -euo pipefail
 
 TEMPLATE=${1:-params.nml}
-RUN_LIST=${2:-param_runs.list}
+RUN_LIST=${2:-}
 JOB_SCRIPT=${3:-2D_KH_mpi.sh}
 PARAM_DIR="params_cases"
 
-if [[ ! -f "${TEMPLATE}" ]]; then
-  echo "[ERROR] Template ${TEMPLATE} not found." >&2
+if [[ -n "${RUN_LIST}" && ! -f "${RUN_LIST}" ]]; then
+  echo "[ERROR] Run definition file ${RUN_LIST} not found." >&2
   exit 1
 fi
 
-if [[ ! -f "${RUN_LIST}" ]]; then
-  echo "[ERROR] Run definition file ${RUN_LIST} not found." >&2
+if [[ -n "${RUN_LIST}" && ! -f "${TEMPLATE}" ]]; then
+  echo "[ERROR] Template ${TEMPLATE} not found." >&2
   exit 1
 fi
 
@@ -60,25 +60,41 @@ wait_for_job() {
   done
 }
 
-while IFS= read -r line || [[ -n "$line" ]]; do
-  [[ -z "$line" || "${line#\#}" != "$line" ]] && continue
-  IFS=' ' read -r -a parts <<< "$line"
-  run_name=${parts[0]}
-  if [[ -z "${run_name}" ]]; then
-    continue
+if [[ -n "${RUN_LIST}" ]]; then
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" || "${line#\#}" != "$line" ]] && continue
+    IFS=' ' read -r -a parts <<< "$line"
+    run_name=${parts[0]}
+    if [[ -z "${run_name}" ]]; then
+      continue
+    fi
+    params_file="${PARAM_DIR}/${run_name}.nml"
+    cp "${TEMPLATE}" "${params_file}"
+
+    for kv in "${parts[@]:1}"; do
+      key=${kv%%=*}
+      value=${kv#*=}
+      update_param "${params_file}" "${key}" "${value}"
+    done
+
+    env_param="PARAM_LIST=${params_file}"
+    job_output=$(qsub -v "${env_param}" "${JOB_SCRIPT}")
+    job_id=$(echo "${job_output}" | awk '{print $1}')
+    echo "[INFO] Submitted ${run_name} as ${job_id}"
+    wait_for_job "${job_id}"
+  done < "${RUN_LIST}"
+else
+  mapfile -t param_files < <(ls "${PARAM_DIR}"/*.nml 2>/dev/null || true)
+  if [[ ${#param_files[@]} -eq 0 ]]; then
+    echo "[ERROR] No parameter files found in ${PARAM_DIR}." >&2
+    exit 1
   fi
-  params_file="${PARAM_DIR}/${run_name}.nml"
-  cp "${TEMPLATE}" "${params_file}"
-
-  for kv in "${parts[@]:1}"; do
-    key=${kv%%=*}
-    value=${kv#*=}
-    update_param "${params_file}" "${key}" "${value}"
+  for params_file in "${param_files[@]}"; do
+    run_name=$(basename "${params_file}" .nml)
+    env_param="PARAM_LIST=${params_file}"
+    job_output=$(qsub -v "${env_param}" "${JOB_SCRIPT}")
+    job_id=$(echo "${job_output}" | awk '{print $1}')
+    echo "[INFO] Submitted ${run_name} as ${job_id}"
+    wait_for_job "${job_id}"
   done
-
-  env_param="PARAM_LIST=${params_file}"
-  job_output=$(qsub -v "${env_param}" "${JOB_SCRIPT}")
-  job_id=$(echo "${job_output}" | awk '{print $1}')
-  echo "[INFO] Submitted ${run_name} as ${job_id}"
-  wait_for_job "${job_id}"
-done < "${RUN_LIST}"
+fi

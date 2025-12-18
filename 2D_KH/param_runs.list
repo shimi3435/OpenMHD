@@ -1,5 +1,5 @@
 # Each non-comment line defines one run:
 # name key=value key=value ...
 # Example values update entries inside the run_params namelist.
-case001 alpha=0.20 vy_amplitude=0.10 output_dir='data/case001'
-case002 alpha=0.25 vy_amplitude=0.15 output_dir='data/case002'
+param_runs_list_case001 alpha=0.20 vy_amplitude=0.10 output_dir='data/param_runs_list_case001'
+param_runs_list_case002 alpha=0.25 vy_amplitude=0.15 output_dir='data/param_runs_list_case002'

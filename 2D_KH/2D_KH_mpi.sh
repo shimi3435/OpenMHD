@@ -4,7 +4,7 @@
 #PBS -N 2D_KH_PS
 #PBS -q B_M
 #PBS -l select=4:ncpus=24:mpiprocs=1:ompthreads=24
-#PBS -l walltime=5:00
+#PBS -l walltime=30:00
 #PBS -j oe
 
 set -euo pipefail
