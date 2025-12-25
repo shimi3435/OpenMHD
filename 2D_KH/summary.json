@@ -1,0 +1,47 @@
+[
+  {
+    "param_file": "/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case001.nml",
+    "base_name": "case001",
+    "status": "ok",
+    "expected_fields": 21,
+    "actual_fields": 21,
+    "detail": "case001_20251218-111556: 21/21 field files",
+    "run_dir": "/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case001_20251218-111556"
+  },
+  {
+    "param_file": "/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case002.nml",
+    "base_name": "case002",
+    "status": "ok",
+    "expected_fields": 21,
+    "actual_fields": 21,
+    "detail": "case002_20251218-111916: 21/21 field files",
+    "run_dir": "/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case002_20251218-111916"
+  },
+  {
+    "param_file": "/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case003.nml",
+    "base_name": "case003",
+    "status": "ok",
+    "expected_fields": 21,
+    "actual_fields": 21,
+    "detail": "case003_20251218-113113: 21/21 field files",
+    "run_dir": "/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case003_20251218-113113"
+  },
+  {
+    "param_file": "/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case004.nml",
+    "base_name": "case004",
+    "status": "incomplete",
+    "expected_fields": 21,
+    "actual_fields": 0,
+    "detail": "case004_20251225-163209: 0/21 files",
+    "run_dir": "/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case004_20251225-163209"
+  },
+  {
+    "param_file": "/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case005.nml",
+    "base_name": "case005",
+    "status": "incomplete",
+    "expected_fields": 21,
+    "actual_fields": 0,
+    "detail": "case005_20251225-163329: 0/21 files",
+    "run_dir": "/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case005_20251225-163329"
+  }
+]

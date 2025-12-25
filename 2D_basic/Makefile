@@ -18,7 +18,7 @@ F90 = mpif90 -fopenmp -O2
 ### JAXA/FX100
 # F90 = f90sjx -Umpi -Uflat
 
-OBJ   = set_dt.o u2v.o bc.o fileio.o rk.o flux_solver.o limiter.o glm_ss2.o
+OBJ   = run_config.o set_dt.o u2v.o bc.o fileio.o rk.o flux_solver.o limiter.o glm_ss2.o
 OBJ_S = main.o model.o
 OBJ_P = parallel.o mainp.o modelp.o mpiio.o
 
@@ -35,6 +35,8 @@ runp : $(OBJ) $(OBJ_P)
 
 %.o: %.f90 param.h
 	$(F90) $(FFLAGS) -c $<
+
+main.o model.o mainp.o modelp.o: run_config.o
 
 clean :
 	rm -f *.out *.o *.mod data/*.dat

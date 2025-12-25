@@ -1,0 +1,6 @@
+param_file,base_name,status,expected_fields,actual_fields,detail,run_dir
+/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case001.nml,case001,ok,21,21,case001_20251218-111556: 21/21 field files,/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case001_20251218-111556
+/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case002.nml,case002,ok,21,21,case002_20251218-111916: 21/21 field files,/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case002_20251218-111916
+/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case003.nml,case003,ok,21,21,case003_20251218-113113: 21/21 field files,/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case003_20251218-113113
+/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case004.nml,case004,incomplete,21,0,case004_20251225-163209: 0/21 files,/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case004_20251225-163209
+/data/t-shimizu/workspace/OpenMHD/2D_KH/params_cases/case005.nml,case005,incomplete,21,0,case005_20251225-163329: 0/21 files,/data/t-shimizu/workspace/OpenMHD/2D_KH/data/case005_20251225-163329

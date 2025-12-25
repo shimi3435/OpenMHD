@@ -1,0 +1,5 @@
+# Each non-comment line defines one run:
+# name key=value key=value ...
+# Example values update entries inside the run_params namelist.
+param_sweep_case001 vy_amplitude=0.75 by_wavenumber=1.5 output_dir='data/param_sweep_case001'
+param_sweep_case002 vy_amplitude=1.10 vx_amplitude=-0.80 output_dir='data/param_sweep_case002'

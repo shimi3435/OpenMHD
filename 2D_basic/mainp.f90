@@ -7,27 +7,28 @@ program main
 !     2015/04/09  S. Zenitani  MPI-IO
 !     2018/05/02  S. Zenitani  parallel module (MPI-3 version)
 !-----------------------------------------------------------------------
+  use run_config_mod, only: sim_config, load_run_config, broadcast_run_config, &
+       set_output_dir, ensure_output_directory
+  use mpi
   use parallel
   implicit none
   include 'param.h'
-  integer, parameter :: ix =  100 + 2
-  integer, parameter :: jx =  100 + 2
-  integer, parameter :: mpi_nums(2)       = (/2, 2/)  ! MPI numbers
-  logical, parameter :: bc_periodicity(2) = (/.true., .true./)
-  integer, parameter :: loop_max = 200000
-  real(8), parameter :: tend  = 4.0d0
-  real(8), parameter :: dtout = 0.1d0 ! output interval
-  real(8), parameter :: cfl   = 0.4d0 ! time step
-! If non-zero, restart from a previous file. If negative, find a restart file backword in time.
-  integer :: n_start = 0
+  integer :: ix, jx
+  integer :: mpi_nums(2)
+  logical :: bc_periodicity(2)
+  integer :: loop_max
+  real(8) :: tend
+  real(8) :: dtout
+  real(8) :: cfl
+  integer :: n_start
 ! Slope limiter  (0: flat, 1: minmod, 2: MC, 3: van Leer, 4: Koren)
-  integer, parameter :: lm_type   = 1
+  integer :: lm_type
 ! Numerical flux (0: LLF, 1: HLL, 2: HLLC, 3: HLLD)
-  integer, parameter :: flux_type = 3
+  integer :: flux_type
 ! Time marching  (0: TVD RK2, 1: RK2)
-  integer, parameter :: time_type = 0
+  integer :: time_type
 ! File I/O  (0: Standard, 1: MPI-IO)
-  integer, parameter :: io_type   = 1
+  integer :: io_type
 !-----------------------------------------------------------------------
 ! See also modelp.f90
 !-----------------------------------------------------------------------
@@ -37,14 +38,55 @@ program main
   real(8) :: ch
   character*256 :: filename
   integer :: merr, myrank, mreq(2)   ! for MPI
+  integer :: world_rank
+  character(len=256) :: params_arg, out_arg
 !-----------------------------------------------------------------------
-  real(8) :: x(ix), y(jx), dx
-  real(8) :: U(ix,jx,var1)  ! conserved variables (U)
-  real(8) :: U1(ix,jx,var1) ! conserved variables: medium state (U*)
-  real(8) :: V(ix,jx,var2)  ! primitive variables (V)
-  real(8) :: VL(ix,jx,var1), VR(ix,jx,var1) ! interpolated states
-  real(8) :: F(ix,jx,var1), G(ix,jx,var1)   ! numerical flux (F,G)
+  real(8), allocatable :: x(:), y(:)
+  real(8) :: dx
+  real(8), allocatable :: U(:,:,:)
+  real(8), allocatable :: U1(:,:,:)
+  real(8), allocatable :: V(:,:,:)
+  real(8), allocatable :: VL(:,:,:), VR(:,:,:)
+  real(8), allocatable :: F(:,:,:), G(:,:,:)
 !-----------------------------------------------------------------------
+
+  call get_command_argument(1, params_arg)
+  call get_command_argument(2, out_arg)
+
+  call mpi_init(merr)
+  call mpi_comm_rank(MPI_COMM_WORLD, world_rank, merr)
+  if (world_rank == 0) then
+     if (len_trim(params_arg) > 0) then
+        call load_run_config(trim(params_arg))
+     else
+        call load_run_config()
+     endif
+     if (len_trim(out_arg) > 0) call set_output_dir(trim(out_arg))
+     call ensure_output_directory()
+  endif
+  call broadcast_run_config(MPI_COMM_WORLD, 0)
+  call mpi_barrier(MPI_COMM_WORLD, merr)
+
+  ix = sim_config%nx + 2
+  jx = sim_config%ny + 2
+  mpi_nums = sim_config%mpi_nums
+  bc_periodicity = sim_config%bc_periodicity
+  loop_max = sim_config%loop_max
+  tend     = sim_config%tend
+  dtout    = sim_config%dtout
+  cfl      = sim_config%cfl
+  lm_type  = sim_config%lm_type
+  flux_type = sim_config%flux_type
+  time_type = sim_config%time_type
+  io_type  = sim_config%io_type
+  n_start  = sim_config%n_start
+
+  allocate(x(ix), y(jx))
+  allocate(U(ix,jx,var1))
+  allocate(U1(ix,jx,var1))
+  allocate(V(ix,jx,var2))
+  allocate(VL(ix,jx,var1), VR(ix,jx,var1))
+  allocate(F(ix,jx,var1), G(ix,jx,var1))
 
 !-----------------------------------------------------------------------
 ! for MPI
@@ -85,8 +127,12 @@ program main
      if ( myrank == 0 ) then
         do k = floor(tend/dtout),0,-1
            n_start = k
-           if ( io_type == 0 )  write(filename,990) myrank, n_start
-           if ( io_type /= 0 )  write(filename,980) n_start
+           if ( io_type == 0 ) then
+              write(filename,'(A,"/field-rank",i5.5,"-",i5.5,".dat")') &
+                   trim(sim_config%output_dir), myrank, n_start
+           else
+              write(filename,'(A,"/field-",i5.5,".dat")') trim(sim_config%output_dir), n_start
+           endif
            open(15,file=filename,form='unformatted',access='stream',status='old',err=100)
            close(15)
            exit
@@ -104,11 +150,12 @@ program main
   else
      if ( io_type == 0 ) then
         write(6,*) 'reading data ...   rank = ', myrank
-        write(filename,990) myrank, n_start
+        write(filename,'(A,"/field-rank",i5.5,"-",i5.5,".dat")') &
+             trim(sim_config%output_dir), myrank, n_start
         call fileio_input(filename,ix,jx,t,x,y,U)
      else
         if( myrank == 0 )  write(6,*) 'reading data ...'
-        write(filename,980) n_start
+        write(filename,'(A,"/field-",i5.5,".dat")') trim(sim_config%output_dir), n_start
         call mpiio_input(filename,ix,jx,t,x,y,U)
      endif
      n_output = n_start + 1
@@ -127,17 +174,18 @@ program main
 !   -----------------
 !    [ output ]
      if ( t >= t_output ) then
-        if (( n_loop > 1 ).or.( n_start == 0 )) then
-           if ( io_type == 0 ) then
-              write(6,*) 'writing data ...   t = ', t, ' rank = ', myrank
-              write(filename,990) myrank, n_output
+       if (( n_loop > 1 ).or.( n_start == 0 )) then
+          if ( io_type == 0 ) then
+             write(6,*) 'writing data ...   t = ', t, ' rank = ', myrank
+              write(filename,'(A,"/field-rank",i5.5,"-",i5.5,".dat")') &
+                   trim(sim_config%output_dir), myrank, n_output
               call fileio_output(filename,ix,jx,t,x,y,U,V)
-           else
-              if( myrank == 0 )  write(6,*) 'writing data ...   t = ', t
-              write(filename,980) n_output
-              call mpiio_output(filename,ix,jx,t,x,y,U,V)
-           endif
-        endif
+          else
+             if( myrank == 0 )  write(6,*) 'writing data ...   t = ', t
+             write(filename,'(A,"/field-",i5.5,".dat")') trim(sim_config%output_dir), n_output
+             call mpiio_output(filename,ix,jx,t,x,y,U,V)
+          endif
+       endif
         n_output = n_output + 1
         t_output = t_output + dtout
         call mpi_barrier(cart2d%comm,merr)
@@ -271,11 +319,6 @@ program main
   call parallel_finalize()
   if( myrank == 0 )  write(6,*) '== end =='
 
-
-980 format ('data/field-',i5.5,'.dat')
-990 format ('data/field-rank',i5.5,'-',i5.5,'.dat')
-!981 format ('data/field-',i5.5,'.dat.restart')
-!991 format ('data/field-rank',i5.5,'-',i5.5,'.dat.restart')
 
 end program main
 !-----------------------------------------------------------------------

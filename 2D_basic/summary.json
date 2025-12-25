@@ -1,0 +1,29 @@
+[
+  {
+    "param_file": "/data/t-shimizu/workspace/OpenMHD/2D_basic/params_cases/case001.nml",
+    "base_name": "case001",
+    "status": "ok",
+    "expected_fields": 41,
+    "actual_fields": 41,
+    "detail": "case001_20251225-155348: 41/41 field files",
+    "run_dir": "/data/t-shimizu/workspace/OpenMHD/2D_basic/data/case001_20251225-155348"
+  },
+  {
+    "param_file": "/data/t-shimizu/workspace/OpenMHD/2D_basic/params_cases/case002.nml",
+    "base_name": "case002",
+    "status": "ok",
+    "expected_fields": 41,
+    "actual_fields": 41,
+    "detail": "case002_20251225-155444: 41/41 field files",
+    "run_dir": "/data/t-shimizu/workspace/OpenMHD/2D_basic/data/case002_20251225-155444"
+  },
+  {
+    "param_file": "/data/t-shimizu/workspace/OpenMHD/2D_basic/params_cases/case003.nml",
+    "base_name": "case003",
+    "status": "ok",
+    "expected_fields": 41,
+    "actual_fields": 41,
+    "detail": "case003_20251225-155717: 41/41 field files",
+    "run_dir": "/data/t-shimizu/workspace/OpenMHD/2D_basic/data/case003_20251225-155717"
+  }
+]

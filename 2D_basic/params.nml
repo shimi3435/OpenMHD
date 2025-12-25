@@ -1,0 +1,30 @@
+&run_params
+  nx = 200              ! Interior grid cells in X (excluding ghost cells)
+  ny = 200              ! Interior grid cells in Y (excluding ghost cells)
+  loop_max = 200000     ! Safety cap on the time-stepping loop count
+  tend = 4.0            ! Physical end time of the simulation
+  dtout = 0.1           ! Interval (in simulation time) between outputs
+  cfl = 0.4             ! CFL number used to compute the time step
+  lm_type = 1           ! Slope limiter (0:flat,1:minmod,2:MC,3:van Leer,4:Koren)
+  flux_type = 3         ! Riemann flux (0:LLF,1:HLL,2:HLLC,3:HLLD)
+  time_type = 0         ! Time integrator (0:TVD RK2, 1:standard RK2)
+  domain_x = 0.0, 6.283185307179586 ! Computational domain in X (start,end)
+  domain_y_min = 0.0    ! Y-domain start (end computed from dx)
+  density0 = 2.77777777777778 ! Background density
+  pressure0 = 1.66666666666667 ! Background pressure
+  vx_amplitude = -1.0   ! Prefactor for vx = A sin(k * y)
+  vx_wavenumber = 1.0   ! Wavenumber used in vx profile
+  vy_amplitude = 1.0    ! Prefactor for vy = A sin(k * x)
+  vy_wavenumber = 1.0   ! Wavenumber used in vy profile
+  bx_amplitude = -1.0   ! Prefactor for bx = A sin(k * y)
+  bx_wavenumber = 1.0   ! Wavenumber used in bx profile
+  by_amplitude = 1.0    ! Prefactor for by = A * sin(k * x)
+  by_wavenumber = 2.0   ! Wavenumber used in by profile
+  bz0 = 0.0             ! Background Bz component
+  ps0 = 0.0             ! Background psi component
+  mpi_nums = 2, 2       ! MPI grid layout (processes in X, Y)
+  bc_periodicity = .true., .true. ! Periodicity flags for X and Y
+  io_type = 1           ! Output method (0:serial file I/O, 1:MPI-IO)
+  n_start = 0           ! Restart index (0 for fresh start, >0 to restart)
+  output_dir = 'data'   ! Directory where field-*.dat files are written
+/
