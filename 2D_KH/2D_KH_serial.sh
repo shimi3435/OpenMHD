@@ -25,6 +25,11 @@ if [[ ${#PARAM_FILES[@]} -eq 0 ]]; then
   exit 1
 fi
 
+if [[ -n "${RUN_DIR:-}" && ${#PARAM_FILES[@]} -ne 1 ]]; then
+  echo "[ERROR] RUN_DIR requires a single parameter file." >&2
+  exit 1
+fi
+
 for param_file in "${PARAM_FILES[@]}"; do
   if [[ ! -f "${param_file}" ]]; then
     echo "[WARN] Parameter file ${param_file} not found. Skipping." >&2
@@ -33,7 +38,14 @@ for param_file in "${PARAM_FILES[@]}"; do
 
   base_name=$(basename "${param_file}" .nml)
   timestamp=$(date +%Y%m%d-%H%M%S)
-  run_dir="data/${base_name}_${timestamp}"
+  if [[ -n "${RUN_DIR:-}" ]]; then
+    run_dir="${RUN_DIR}"
+    if [[ "${run_dir}" != /* ]]; then
+      run_dir="${PBS_O_WORKDIR}/${run_dir}"
+    fi
+  else
+    run_dir="data/${base_name}_${timestamp}"
+  fi
   mkdir -p "${run_dir}"
 
   cp "${param_file}" "${run_dir}/params.nml"

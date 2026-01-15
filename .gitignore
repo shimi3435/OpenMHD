@@ -6,3 +6,4 @@
 *.pyc
 2D_KH/data/*/*params.nml
 *serial.o*
+job.json

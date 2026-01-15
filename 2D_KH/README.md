@@ -3,7 +3,7 @@
 ## 概要
 - 圧縮性 MHD 方程式を 2 次元で解く Fortran コードです。MPI 並列 (領域分割) と OpenMP に対応しており、`mainp.f90`/`modelp.f90` を中心に Kelvin-Helmholtz (KH) せん断層の成長を追跡します。
 - せん断速度と密度勾配は `model.f90` で定義され、GLM 法による発散制御 (`glm_ss2.f90`) や HLLD など複数のリーマンソルバー (`flux_solver.f90`) を切り替えてベンチマークできます。
-- 代表的なパラメータは `params.nml` もしくは `params_cases/*.nml` に Namelist 形式で記述します。`output_dir` 以下に `field-*.dat` や `summary.*` が保存され、`plot.py`/`plot.ipynb` で簡単に可視化できます。
+- 代表的なパラメータは `params.nml` もしくは `params_cases/*.nml` に Namelist 形式で記述します。`output_dir` 以下に `field-*.dat` や `summary.*` が保存され、`plot.py`/`plot.ipynb` や Web UI の Plotly 表示で可視化できます。
 
 ## 依存関係とビルド
 1. MPI 対応 Fortran コンパイラ (例: `mpif90`) と OpenMP を利用できる環境を用意します。
@@ -24,23 +24,25 @@
   - `cfl`, `flux_type`, `lm_type`, `time_type`: 数値スキームの設定。
   - `dtout`, `output_dir`, `io_type`: 出力タイミングと I/O 方法 (MPI-IO か単一ファイルか)。
   - `bc_periodicity`: 各方向の境界条件。標準では x 周期 / y 非周期。
-- 複数ケースを回す場合は `params_cases/params_*.nml` を作成し、`PARAM_LIST="params_cases/case1.nml ..."` のように渡します。`generate_params.py` や `manage_runs.py` を使うと一括生成・実行が容易です。
+- 複数ケースを回す場合は `params_cases/*.nml` を作成し、`PARAM_LIST="params_cases/case1.nml ..."` のように渡します。`generate_params.py` や `manage_runs.py` を使うと一括生成・実行が容易です。
+- PBS 経由で `RUN_DIR` を指定する場合は、`PARAM_LIST` を 1 つに絞ってください（出力先を固定するため）。
 
 ## 実行方法
 ### ローカル / 対話実行
 ```bash
 mpirun -np 4 ./ap.out params.nml data/KH_run1
 # もしくは PARAM_LIST を利用
-PARAM_LIST="params_cases/kx1.nml params_cases/kx2.nml" ./2D_KH_mpi.sh
+PARAM_LIST="params_cases/kx1.nml params_cases/kx2.nml" ./2D_KH_mpi_PS.sh
 ```
 - 引数は `./ap.out <param_file> <出力先ディレクトリ>` です。スクリプトでは `data/<ケース名>_<タイムスタンプ>` が自動生成され、`params.nml` が各 run_dir にコピーされます。
 - `run_param_sweep.sh` は `param_runs.list` を読み込んで複数ケースを連続実行します。
 
-### PBS ジョブ (`2D_KH_mpi.sh` / `2D_KH_serial.sh`)
+### PBS ジョブ (`2D_KH_mpi_PS.sh` / `2D_KH_serial.sh`)
 - NIFS B 系列を想定した qsub スクリプトです。`PARAM_LIST` が未指定の場合は `params_cases/*.nml` を列挙し、存在しなければ `params.nml` を実行します。
 - `module load openmpi/5.0.7/rocm6.3.3`、`OMP_NUM_THREADS=24` を設定し、`mpirun --map-by NUMA` で 4 ノード×24 スレッド構成を採用しています。必要に応じて `#PBS` リソース行や `module load` を自分の環境に合わせて変更してください。
 - 標準出力/エラーはジョブ名に紐づく `.oXXXXX` ファイルにまとめて出力されます。
 - `2D_KH_serial.sh` は `a.out` を逐次実行するシリアル版です。`#PBS -l` と `OMP_NUM_THREADS` は環境に合わせて調整してください。
+- Web アプリ経由の実行は、`params_cases` のケースを選択して PBS に投入し、`RUN_DIR` を指定して `OpenMHD/2D_KH/data/` に出力します。
 
 ## 解析・可視化
 - `plot.py`, `plot.ipynb`: Python (matplotlib) を使った 2D スライスや時間発展の確認用サンプル。`PYTHONPATH` にリポジトリルートを含めるか、`%run -i plot.py` として実行します。
