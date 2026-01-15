@@ -1,0 +1,26 @@
+&run_params
+  nx = 160              ! Interior grid cells in X (excluding ghost cells)
+  ny = 200              ! Interior grid cells in Y (excluding ghost cells)
+  loop_max = 200000     ! Safety cap on the time-stepping loop count
+  tend = 100.0          ! Physical end time of the simulation
+  dtout = 5.0           ! Interval (in simulation time) between outputs
+  cfl = 0.4             ! CFL number used to compute the time step
+  lm_type = 1           ! Slope limiter (0:flat,1:minmod,2:MC,3:van Leer,4:Koren)
+  flux_type = 3         ! Riemann flux (0:LLF,1:HLL,2:HLLC,3:HLLD)
+  time_type = 0         ! Time integrator (0:TVD RK2, 1:standard RK2)
+  domain_x = 0.0, 16.0  ! Computational domain in X (start,end)
+  domain_y_min = -10.0  ! Y-domain start (end computed from dx)
+  alpha = 0.2           ! Density contrast parameter for KH profile
+  pressure0 = 0.15      ! Uniform initial pressure
+  vx_shear = 0.5        ! Shear velocity amplitude (tanh profile)
+  vy_amplitude = 0.1    ! Amplitude of sinusoidal vy perturbation
+  vy_scale_limit = 25.0 ! Clamp for cosh argument to avoid overflow
+  bx0 = 0.0             ! Background Bx component
+  by0 = 0.0             ! Background By component
+  bz0 = 1.0             ! Background Bz component
+  mpi_nums = 2, 2       ! MPI grid layout (processes in X, Y)
+  bc_periodicity = .true., .false. ! Periodicity flags for X and Y
+  io_type = 1           ! Output method (0:serial file I/O, 1:MPI-IO)
+  n_start = 0           ! Restart index (0 for fresh start, >0 to restart)
+  output_dir = 'data/default_params'   ! Directory where field-*.dat files are written
+/

@@ -4,4 +4,5 @@
 *.mod
 *PS.o*
 *.pyc
-*case*
+2D_KH/data/*/*params.nml
+*serial.o*

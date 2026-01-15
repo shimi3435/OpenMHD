@@ -40,7 +40,14 @@ for param_file in "${PARAM_FILES[@]}"; do
 
   base_name=$(basename "${param_file}" .nml)
   timestamp=$(date +%Y%m%d-%H%M%S)
-  run_dir="data/${base_name}_${timestamp}"
+  if [[ -n "${RUN_DIR:-}" ]]; then
+    run_dir="${RUN_DIR}"
+    if [[ "${run_dir}" != /* ]]; then
+      run_dir="${PBS_O_WORKDIR}/${run_dir}"
+    fi
+  else
+    run_dir="data/${base_name}_${timestamp}"
+  fi
   mkdir -p "${run_dir}"
 
   cp "${param_file}" "${run_dir}/params.nml"

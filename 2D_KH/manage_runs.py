@@ -6,6 +6,7 @@ Usage examples:
   ./manage_runs.py                    # print status table for every params_cases/*.nml
   ./manage_runs.py --submit           # resubmit missing/incomplete runs via 2D_KH_mpi.sh
   ./manage_runs.py --dry-run --submit # show qsub commands without running them
+  ./manage_runs.py --submit --serial  # submit serial a.out jobs via 2D_KH_serial.sh
   ./manage_runs.py --include-unknown --submit # also re-run entries lacking tend/dtout info
   ./manage_runs.py --submit --no-chain # submit all jobs at once (default chains them)
   ./manage_runs.py --summary-json summary.json --summary-csv summary.csv # persist status tables
@@ -249,11 +250,12 @@ def main() -> None:
     parser.add_argument("--root", type=Path, default=script_dir, help="Base directory that contains params_cases, data, and the job script (default: folder containing this file).")
     parser.add_argument("--param-dir", default="params_cases", help="Relative directory with parameter files.")
     parser.add_argument("--data-dir", default="data", help="Relative directory with simulation outputs.")
-    parser.add_argument("--job-script", default="2D_KH_mpi.sh", help="PBS script used to run ap.out.")
+    parser.add_argument("--job-script", help="PBS script used with --submit (default: 2D_KH_mpi.sh or 2D_KH_serial.sh when --serial).")
     parser.add_argument("--qsub-extra", action="append", default=[], help="Extra tokens appended to the qsub command (repeat if needed).")
     parser.add_argument("--submit", action="store_true", help="Submit qsub jobs for every missing/incomplete parameter file.")
+    parser.add_argument("--serial", action="store_true", help="Use a.out serial job script (2D_KH_serial.sh) instead of 2D_KH_mpi.sh. Serial submissions skip chaining.")
     parser.add_argument("--include-unknown", action="store_true", help="Allow --submit to re-run entries whose completeness could not be determined.")
-    parser.add_argument("--dry-run", action="store_true", help="Print qsub commands instead of executing them.")
+    parser.add_argument("--dry-run", action="store_true", help="Print commands instead of executing them.")
     parser.add_argument("--no-chain", action="store_true", help="Submit all qsub jobs immediately without waiting for the previous one to finish.")
     parser.add_argument("--wait-interval", type=int, default=60, help="Seconds between qstat polls while chaining jobs (default: 60).")
     parser.add_argument("--summary-json", type=Path, help="Write the status table to this JSON file.")
@@ -263,7 +265,11 @@ def main() -> None:
     root = args.root.resolve()
     param_dir = (root / args.param_dir).resolve()
     data_dir = (root / args.data_dir).resolve()
-    job_script = (root / args.job_script).resolve()
+    if args.job_script:
+        job_script = (root / args.job_script).resolve()
+    else:
+        default_script = "2D_KH_serial.sh" if args.serial else "2D_KH_mpi.sh"
+        job_script = (root / default_script).resolve()
 
     if not param_dir.is_dir():
         sys.exit(f"[ERROR] Parameter directory {param_dir} not found.")
@@ -289,7 +295,7 @@ def main() -> None:
             extra_args=extra_tokens,
             include_unknown=args.include_unknown,
             dry_run=args.dry_run,
-            chain=not args.no_chain,
+            chain=False if args.serial else not args.no_chain,
             wait_interval=args.wait_interval,
         )
         final_statuses = [evaluate_param(p, data_dir) for p in param_files]

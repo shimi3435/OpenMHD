@@ -36,10 +36,11 @@ PARAM_LIST="params_cases/kx1.nml params_cases/kx2.nml" ./2D_KH_mpi.sh
 - 引数は `./ap.out <param_file> <出力先ディレクトリ>` です。スクリプトでは `data/<ケース名>_<タイムスタンプ>` が自動生成され、`params.nml` が各 run_dir にコピーされます。
 - `run_param_sweep.sh` は `param_runs.list` を読み込んで複数ケースを連続実行します。
 
-### PBS ジョブ (`2D_KH_mpi.sh`)
+### PBS ジョブ (`2D_KH_mpi.sh` / `2D_KH_serial.sh`)
 - NIFS B 系列を想定した qsub スクリプトです。`PARAM_LIST` が未指定の場合は `params_cases/*.nml` を列挙し、存在しなければ `params.nml` を実行します。
 - `module load openmpi/5.0.7/rocm6.3.3`、`OMP_NUM_THREADS=24` を設定し、`mpirun --map-by NUMA` で 4 ノード×24 スレッド構成を採用しています。必要に応じて `#PBS` リソース行や `module load` を自分の環境に合わせて変更してください。
 - 標準出力/エラーはジョブ名に紐づく `.oXXXXX` ファイルにまとめて出力されます。
+- `2D_KH_serial.sh` は `a.out` を逐次実行するシリアル版です。`#PBS -l` と `OMP_NUM_THREADS` は環境に合わせて調整してください。
 
 ## 解析・可視化
 - `plot.py`, `plot.ipynb`: Python (matplotlib) を使った 2D スライスや時間発展の確認用サンプル。`PYTHONPATH` にリポジトリルートを含めるか、`%run -i plot.py` として実行します。
