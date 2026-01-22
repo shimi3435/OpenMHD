@@ -42,7 +42,7 @@ PARAM_LIST="params_cases/kx1.nml params_cases/kx2.nml" ./2D_KH_mpi_PS.sh
 - `module load openmpi/5.0.7/rocm6.3.3`、`OMP_NUM_THREADS=24` を設定し、`mpirun --map-by NUMA` で 4 ノード×24 スレッド構成を採用しています。必要に応じて `#PBS` リソース行や `module load` を自分の環境に合わせて変更してください。
 - 標準出力/エラーはジョブ名に紐づく `.oXXXXX` ファイルにまとめて出力されます。
 - `2D_KH_serial.sh` は `a.out` を逐次実行するシリアル版です。`#PBS -l` と `OMP_NUM_THREADS` は環境に合わせて調整してください。
-- Web アプリ経由の実行は、`params_cases` のケースを選択して PBS に投入し、`RUN_DIR` を指定して `OpenMHD/2D_KH/data/` に出力します。
+- Web アプリ経由の実行は、PBS チェックを有効にした場合は `params_cases` のケースを選択して投入し、無効にした場合はローカルでサブプロセス実行します。いずれも `OpenMHD/2D_KH/data/` に出力します。
 
 ## 解析・可視化
 - `plot.py`, `plot.ipynb`: Python (matplotlib) を使った 2D スライスや時間発展の確認用サンプル。`PYTHONPATH` にリポジトリルートを含めるか、`%run -i plot.py` として実行します。
