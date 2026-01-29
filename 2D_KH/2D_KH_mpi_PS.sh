@@ -39,7 +39,7 @@ for param_file in "${PARAM_FILES[@]}"; do
   fi
 
   base_name=$(basename "${param_file}" .nml)
-  timestamp=$(date +%Y%m%d-%H%M%S)
+  timestamp=$(date +%Y%m%d_%H%M%S)
   if [[ -n "${RUN_DIR:-}" ]]; then
     run_dir="${RUN_DIR}"
     if [[ "${run_dir}" != /* ]]; then

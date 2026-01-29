@@ -25,6 +25,7 @@ module run_config_mod
      logical :: bc_periodicity(2) = (/.true., .false./)
      integer :: io_type = 1
      integer :: n_start = 0
+     logical :: output_every_step = .false.
      character(len=256) :: param_filename = 'params.nml'
      character(len=256) :: output_dir     = 'data'
   end type run_config_t
@@ -44,11 +45,12 @@ contains
     real(8) :: alpha, pressure0, vx_shear, vy_amplitude, vy_scale_limit
     real(8) :: bx0, by0, bz0
     logical :: bc_periodicity(2)
+    logical :: output_every_step
     character(len=256) :: output_dir
 
     namelist /run_params/ nx, ny, loop_max, tend, dtout, cfl, lm_type, flux_type, time_type, &
 &       domain_x, domain_y_min, alpha, pressure0, vx_shear, vy_amplitude, vy_scale_limit,    &
-&       bx0, by0, bz0, mpi_nums, bc_periodicity, io_type, n_start, output_dir
+&       bx0, by0, bz0, mpi_nums, bc_periodicity, io_type, n_start, output_every_step, output_dir
 
     fname = sim_config%param_filename
     if (present(filename)) then
@@ -78,6 +80,7 @@ contains
     bc_periodicity = sim_config%bc_periodicity
     io_type        = sim_config%io_type
     n_start        = sim_config%n_start
+    output_every_step = sim_config%output_every_step
     output_dir     = sim_config%output_dir
 
     inquire(file=trim(fname), exist=has_file)
@@ -125,6 +128,7 @@ contains
     sim_config%bc_periodicity = bc_periodicity
     sim_config%io_type        = io_type
     sim_config%n_start        = n_start
+    sim_config%output_every_step = output_every_step
     sim_config%param_filename = trim(fname)
     if (len_trim(output_dir) > 0) then
        sim_config%output_dir = adjustl(output_dir)
@@ -164,7 +168,7 @@ contains
     integer :: ierr
     integer :: int_vals(10)
     real(8) :: real_vals(14)
-    integer :: logic_vals(2)
+    integer :: logic_vals(3)
 
     int_vals = (/ sim_config%nx, sim_config%ny, sim_config%loop_max, sim_config%lm_type, &
                   sim_config%flux_type, sim_config%time_type, sim_config%mpi_nums(1),     &
@@ -176,6 +180,7 @@ contains
     logic_vals = 0
     if (sim_config%bc_periodicity(1)) logic_vals(1) = 1
     if (sim_config%bc_periodicity(2)) logic_vals(2) = 1
+    if (sim_config%output_every_step) logic_vals(3) = 1
 
     call mpi_bcast(int_vals, size(int_vals), mpi_integer, root, comm, ierr)
     call mpi_bcast(real_vals, size(real_vals), mpi_real8, root, comm, ierr)
@@ -210,6 +215,7 @@ contains
 
     sim_config%bc_periodicity(1) = (logic_vals(1) == 1)
     sim_config%bc_periodicity(2) = (logic_vals(2) == 1)
+    sim_config%output_every_step = (logic_vals(3) == 1)
   end subroutine broadcast_run_config
 
 end module run_config_mod

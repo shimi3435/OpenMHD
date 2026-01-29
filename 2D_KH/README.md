@@ -22,7 +22,7 @@
   - `alpha`, `vx_shear`, `vy_amplitude`: KH せん断プロファイルと摂動の強さ。
   - `bx0`, `by0`, `bz0`: 一様背景磁場。
   - `cfl`, `flux_type`, `lm_type`, `time_type`: 数値スキームの設定。
-  - `dtout`, `output_dir`, `io_type`: 出力タイミングと I/O 方法 (MPI-IO か単一ファイルか)。
+  - `dtout`, `output_every_step`, `output_dir`, `io_type`: 出力タイミングと I/O 方法 (MPI-IO か単一ファイルか)。
   - `bc_periodicity`: 各方向の境界条件。標準では x 周期 / y 非周期。
 - 複数ケースを回す場合は `params_cases/*.nml` を作成し、`PARAM_LIST="params_cases/case1.nml ..."` のように渡します。`generate_params.py` や `manage_runs.py` を使うと一括生成・実行が容易です。
 - PBS 経由で `RUN_DIR` を指定する場合は、`PARAM_LIST` を 1 つに絞ってください（出力先を固定するため）。

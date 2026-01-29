@@ -16,6 +16,7 @@ program main
   integer :: lm_type
   integer :: flux_type
   integer :: time_type
+  logical :: output_every_step
 !-----------------------------------------------------------------------
 ! See also model.f90
 !-----------------------------------------------------------------------
@@ -53,6 +54,7 @@ program main
   lm_type  = sim_config%lm_type
   flux_type = sim_config%flux_type
   time_type = sim_config%time_type
+  output_every_step = sim_config%output_every_step
 
   allocate(x(ix), y(jx))
   allocate(U(ix,jx,var1))
@@ -89,12 +91,19 @@ program main
      call u2v(U,V,ix,jx)
 !   -----------------
 !    [ output ]
-     if ( t >= t_output ) then
+     if ( output_every_step ) then
         write(6,*) 'data output   t = ', t
         write(filename,'(A,"/field-",i5.5,".dat")') trim(sim_config%output_dir), n_output
         call fileio_output(filename,ix,jx,t,x,y,U,V)
         n_output = n_output + 1
-        t_output = t_output + dtout
+     else
+        if ( t >= t_output ) then
+           write(6,*) 'data output   t = ', t
+           write(filename,'(A,"/field-",i5.5,".dat")') trim(sim_config%output_dir), n_output
+           call fileio_output(filename,ix,jx,t,x,y,U,V)
+           n_output = n_output + 1
+           t_output = t_output + dtout
+        endif
      endif
 !    [ end? ]
      if ( t >= tend )  exit

@@ -29,10 +29,12 @@ program main
   integer :: time_type
 ! File I/O  (0: Standard, 1: MPI-IO)
   integer :: io_type
+  logical :: output_every_step
 !-----------------------------------------------------------------------
 ! See also modelp.f90
 !-----------------------------------------------------------------------
   integer :: k
+  integer :: k_max
   integer :: n_loop,n_output
   real(8) :: t, dt, t_output
   real(8) :: ch
@@ -80,6 +82,7 @@ program main
   time_type = sim_config%time_type
   io_type  = sim_config%io_type
   n_start  = sim_config%n_start
+  output_every_step = sim_config%output_every_step
 
   allocate(x(ix), y(jx))
   allocate(U(ix,jx,var1))
@@ -126,7 +129,12 @@ program main
   ! If n_start is negative, look for a latest restart file.
   if ( n_start < 0 ) then
      if ( myrank == 0 ) then
-        do k = floor(tend/dtout),0,-1
+        if ( output_every_step ) then
+           k_max = loop_max
+        else
+           k_max = floor(tend/dtout)
+        endif
+        do k = k_max,0,-1
            n_start = k
            if ( io_type == 0 ) then
               write(filename,'(A,"/field-rank",i5.5,"-",i5.5,".dat")') &
@@ -174,7 +182,7 @@ program main
      call u2v(U,V,ix,jx)
 !   -----------------
 !    [ output ]
-     if ( t >= t_output ) then
+     if ( output_every_step ) then
         if (( n_loop > 1 ).or.( n_start == 0 )) then
            if ( io_type == 0 ) then
               write(6,*) 'writing data ...   t = ', t, ' rank = ', myrank
@@ -188,8 +196,25 @@ program main
            endif
         endif
         n_output = n_output + 1
-        t_output = t_output + dtout
         call mpi_barrier(cart2d%comm,merr)
+     else
+        if ( t >= t_output ) then
+           if (( n_loop > 1 ).or.( n_start == 0 )) then
+              if ( io_type == 0 ) then
+                 write(6,*) 'writing data ...   t = ', t, ' rank = ', myrank
+                 write(filename,'(A,"/field-rank",i5.5,"-",i5.5,".dat")') &
+                      trim(sim_config%output_dir), myrank, n_output
+                 call fileio_output(filename,ix,jx,t,x,y,U,V)
+              else
+                 if( myrank == 0 )  write(6,*) 'writing data ...   t = ', t
+                 write(filename,'(A,"/field-",i5.5,".dat")') trim(sim_config%output_dir), n_output
+                 call mpiio_output(filename,ix,jx,t,x,y,U,V)
+              endif
+           endif
+           n_output = n_output + 1
+           t_output = t_output + dtout
+           call mpi_barrier(cart2d%comm,merr)
+        endif
      endif
 !    [ end? ]
      if ( t >= tend )  exit

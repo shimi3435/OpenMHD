@@ -4,6 +4,7 @@
   loop_max = 200000     ! Safety cap on the time-stepping loop count
   tend = 100.0          ! Physical end time of the simulation
   dtout = 5.0           ! Interval (in simulation time) between outputs
+  output_every_step = .false. ! Output every time step (overrides dtout)
   cfl = 0.4             ! CFL number used to compute the time step
   lm_type = 1           ! Slope limiter (0:flat,1:minmod,2:MC,3:van Leer,4:Koren)
   flux_type = 3         ! Riemann flux (0:LLF,1:HLL,2:HLLC,3:HLLD)
