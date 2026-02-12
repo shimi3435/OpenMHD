@@ -43,6 +43,7 @@ PARAM_LIST="params_cases/kx1.nml params_cases/kx2.nml" ./2D_KH_mpi_PS.sh
 - 標準出力/エラーはジョブ名に紐づく `.oXXXXX` ファイルにまとめて出力されます。
 - `2D_KH_serial.sh` は `a.out` を逐次実行するシリアル版です。`#PBS -l` と `OMP_NUM_THREADS` は環境に合わせて調整してください。
 - Web アプリ経由の実行は、PBS チェックを有効にした場合は `params_cases` のケースを選択して投入し、無効にした場合はローカルでサブプロセス実行します。いずれも `OpenMHD/2D_KH/data/` に出力します。
+- Active Learning の Auto loop runner（KH 用）は、この `params_cases` / PBS 実行フローを前提に、候補生成 -> ケース保存 -> PBS 実行 -> 再学習を繰り返します（Auto loop の再学習も PBS 必須）。
 
 ## 解析・可視化
 - `plot.py`, `plot.ipynb`: Python (matplotlib) を使った 2D スライスや時間発展の確認用サンプル。`PYTHONPATH` にリポジトリルートを含めるか、`%run -i plot.py` として実行します。
