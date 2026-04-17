@@ -9,6 +9,7 @@
 - `mainp.f90` / `modelp.f90` / `mpibc.f90`: 並列時間積分と境界通信。
 - `model.f90`: 背景密度・圧力 (`density0`, `pressure0`) と正弦波パターン (`vx_*`, `bx_*`, `by_*`) を定義。
 - `params.nml` と `params_cases/`: Namelist 入力。複数ケースを置くとスクリプトが自動検出。
+- `2D_basic_serial.sh`: シリアル `a.out` 用の PBS 投入スクリプト。
 - `2D_basic_mpi.sh`: PBS 用の投入スクリプト。
 - `plot.py`, `plot_movie.py`, `plot.ipynb`: Python 可視化サンプル。
 
@@ -40,10 +41,11 @@ mpirun -np 4 ./ap.out params.nml data/OT_ref
 - 実行時引数は `<param_file> <出力ディレクトリ>`。存在しない場合は自動作成され、実行時点の `params.nml` がコピーされます。
 - `PARAM_LIST` を指定すると複数の Namelist を一度に実行できます。
 
-### PBS 投入 (`2D_basic_mpi.sh`)
+### PBS 投入 (`2D_basic_serial.sh`, `2D_basic_mpi.sh`)
+- `2D_basic_serial.sh` は KH2D と同様の軽量な serial PBS script で、`RUN_DIR` を解釈して `./a.out` を実行します。
 - `#PBS -l select=4:ncpus=24:ompthreads=24` など NIFS のバッチ設定を含みます。別環境ではキュー名やノード数を調整してください。
-- `module load openmpi/5.0.7/rocm6.3.3` で MPI を読み込み、`OMP_NUM_THREADS=24` を設定したのち、`mpirun --map-by NUMA -x UCX_MAX_RNDV_RAILS=4 ./ap.out ...` を実行します。
-- `PARAM_LIST` 未設定時は `params_cases/*.nml` を列挙し、無ければ `params.nml` を利用します。スクリプト実行後、`data/<case>_<timestamp>` が生成され、ログは `2D_basic_mpi_PS.o*` にまとめられます。
+- `2D_basic_mpi.sh` は `module load openmpi/5.0.7/rocm6.3.3` で MPI を読み込み、`OMP_NUM_THREADS=24` を設定したのち、`mpirun --map-by NUMA -x UCX_MAX_RNDV_RAILS=4 ./ap.out ...` を実行します。
+- どちらの script も `PARAM_LIST` 未設定時は `params_cases/*.nml` を列挙し、無ければ `params.nml` を利用します。`RUN_DIR` が与えられた場合はその出力先を優先します。
 
 ## 後処理
 - `plot.py`: 任意の `data/<run>` を読み込み、密度・圧力・磁場などを matplotlib で可視化。

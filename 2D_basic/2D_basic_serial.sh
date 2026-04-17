@@ -1,18 +1,11 @@
 #!/bin/bash
 #------- qsub option -----------
-#PBS -P NIFS25KISC015
-#PBS -N 2D_basic_mpi_PS
-#PBS -q B_M
-#PBS -l select=4:ncpus=24:mpiprocs=1:ompthreads=24
-#PBS -l walltime=30:00
+#PBS -N 2D_basic_serial
 #PBS -j oe
 
 set -euo pipefail
 
 #------- Program execution -----------
-module load openmpi/5.0.7/rocm6.3.3
-
-export OMP_NUM_THREADS=24
 
 cd "${PBS_O_WORKDIR}"
 
@@ -58,5 +51,5 @@ for param_file in "${PARAM_FILES[@]}"; do
   cp "${param_file}" "${run_dir}/params.nml"
   echo "[INFO] Starting run ${base_name} -> ${run_dir}"
 
-  mpirun --display-map --map-by NUMA -x UCX_MAX_RNDV_RAILS=4 ./ap.out "${run_dir}/params.nml" "${run_dir}"
+  ./a.out "${run_dir}/params.nml" "${run_dir}"
 done
