@@ -1,0 +1,30 @@
+&run_params
+  nx = 200
+  ny = 200
+  loop_max = 200000
+  tend = 4.0
+  dtout = 0.1
+  cfl = 0.4
+  lm_type = 1
+  flux_type = 3
+  time_type = 0
+  domain_x = 0.0, 6.283185307179586
+  domain_y_min = 0.0
+  density0 = 2.77777777777778
+  pressure0 = 1.66666666666667
+  vx_amplitude = -1.0
+  vx_wavenumber = 1.0
+  vy_amplitude = 1.0
+  vy_wavenumber = 1.0
+  bx_amplitude = -1.0
+  bx_wavenumber = 1.0
+  by_amplitude = 1.0
+  by_wavenumber = 2.0
+  bz0 = 0.0
+  ps0 = 0.0
+  mpi_nums = 2, 2
+  bc_periodicity = .true., .true.
+  io_type = 1
+  n_start = 0
+  output_dir = 'data'
+/
