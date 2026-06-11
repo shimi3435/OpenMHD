@@ -2,6 +2,7 @@
 #------- qsub option -----------
 #PBS -N 2D_basic_serial
 #PBS -j oe
+#PBS -l walltime=06:00:00
 
 set -euo pipefail
 
