@@ -26,5 +26,6 @@
   bc_periodicity = .true., .true. ! Periodicity flags for X and Y
   io_type = 1           ! Output method (0:serial file I/O, 1:MPI-IO)
   n_start = 0           ! Restart index (0 for fresh start, >0 to restart)
+  output_every_step = .false. ! Output every loop when true, otherwise use dtout interval
   output_dir = 'data'   ! Directory where field-*.dat files are written
 /

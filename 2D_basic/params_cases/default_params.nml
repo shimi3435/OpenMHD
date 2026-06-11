@@ -26,5 +26,6 @@
   bc_periodicity = .true., .true.
   io_type = 1
   n_start = 0
+  output_every_step = .false.
   output_dir = 'data'
 /
